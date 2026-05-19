@@ -8,6 +8,8 @@ import { isWolfRole } from "@/types/game";
 import { cn } from "@/lib/utils";
 import { buildSimpleAvatarUrl, getModelLogoUrl } from "@/lib/avatar-config";
 import { useTranslations } from "next-intl";
+import { useAtom } from "jotai";
+import { myPlayerIdAtom } from "@/store/game-machine";
 
 interface PlayerCardCompactProps {
   player: Player;
@@ -53,8 +55,9 @@ export function PlayerCardCompact({
   isInSelectionPhase = false,
 }: PlayerCardCompactProps) {
   const t = useTranslations();
+  const [myPlayerId] = useAtom(myPlayerIdAtom);
   const isDead = !player.alive;
-  const isMe = player.isHuman;
+  const isMe = player.playerId === myPlayerId;
   const isReady = isMe ? !!player.displayName?.trim() : !!player.agentProfile?.persona;
   const isDisabledInSelection = isInSelectionPhase && !canClick && isReady && !isDead;
 

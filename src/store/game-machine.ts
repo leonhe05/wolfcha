@@ -550,9 +550,32 @@ export const analysisErrorAtom = atom<string | null>(null);
 
 // ============ 派生状态 Atoms ============
 
-// 人类玩家
+// 当前客户端对应的玩家 ID（联机模式下由后端下发，单机模式为 null）
+export const myPlayerIdAtom = atom<string | null>(null);
+
+// 当前客户端对应的玩家（我自己）
+export const myPlayerAtom = atom((get) => {
+  const gameState = get(gameStateAtom);
+  const myPlayerId = get(myPlayerIdAtom);
+  if (myPlayerId) {
+    return gameState.players.find((p) => p.playerId === myPlayerId) || null;
+  }
+  return null;
+});
+
+// 当前客户端的座位号
+export const mySeatAtom = atom((get) => {
+  const myPlayer = get(myPlayerAtom);
+  return myPlayer?.seat ?? null;
+});
+
+// 人类玩家（兼容旧代码：联机模式下等同于 myPlayer，单机模式下为第一个真人）
 export const humanPlayerAtom = atom((get) => {
   const gameState = get(gameStateAtom);
+  const myPlayerId = get(myPlayerIdAtom);
+  if (myPlayerId) {
+    return gameState.players.find((p) => p.playerId === myPlayerId) || null;
+  }
   return gameState.players.find((p) => p.isHuman) || null;
 });
 
@@ -667,7 +690,7 @@ export const PHASE_CONFIGS: Record<Phase, PhaseConfig> = {
     },
     requiresHumanInput: (hp) => hp?.alive && hp?.role === "Seer" || false,
     canSelectPlayer: (hp, target, gs) => {
-      if (!hp || hp.role !== "Seer" || !target.alive || target.isHuman) return false;
+      if (!hp || hp.role !== "Seer" || !target.alive || target.playerId === hp.playerId) return false;
       // Seer can only check once per night
       if (gs.nightActions.seerTarget !== undefined) return false;
       return true;
@@ -736,7 +759,7 @@ export const PHASE_CONFIGS: Record<Phase, PhaseConfig> = {
     },
     canSelectPlayer: (hp, target, gs) => {
       if (!hp?.alive || !target.alive) return false;
-      if (target.isHuman) return false;
+      if (target.playerId === hp.playerId) return false;
       // 候选人不能投票
       const candidates = gs.badge.candidates || [];
       if (candidates.length === 0) return false;
@@ -806,7 +829,7 @@ export const PHASE_CONFIGS: Record<Phase, PhaseConfig> = {
       return typeof gs.votes[hp?.playerId || ""] !== "number";
     },
     canSelectPlayer: (hp, target, gs) => {
-      if (!hp?.alive || target.isHuman || !target.alive) return false;
+      if (!hp?.alive || target.playerId === hp.playerId || !target.alive) return false;
       // Revealed Idiot cannot vote
       if (hp.role === "Idiot" && gs.roleAbilities.idiotRevealed) return false;
       if (typeof gs.votes[hp.playerId] === "number") return false;
@@ -843,7 +866,7 @@ export const PHASE_CONFIGS: Record<Phase, PhaseConfig> = {
     },
     canSelectPlayer: (hp, target, gs) => {
       // 只能选择存活的非自己的玩家
-      if (!target.alive || target.isHuman) return false;
+      if (!target.alive || target.playerId === hp?.playerId) return false;
       const sheriffSeat = gs.badge.holderSeat;
       if (hp?.seat !== sheriffSeat) return false;
       return true;
@@ -859,7 +882,7 @@ export const PHASE_CONFIGS: Record<Phase, PhaseConfig> = {
     },
     requiresHumanInput: (hp, gs) => hp?.role === "Hunter" && gs.roleAbilities.hunterCanShoot || false,
     canSelectPlayer: (hp, target) => {
-      if (!hp || hp.role !== "Hunter" || !target.alive || target.isHuman) return false;
+      if (!hp || hp.role !== "Hunter" || !target.alive || target.playerId === hp.playerId) return false;
       return true;
     },
     actionType: "night_action",
@@ -873,7 +896,7 @@ export const PHASE_CONFIGS: Record<Phase, PhaseConfig> = {
     },
     requiresHumanInput: (hp, gs) => hp?.role === "WhiteWolfKing" && hp?.alive && !gs.roleAbilities.whiteWolfKingBoomUsed || false,
     canSelectPlayer: (hp, target) => {
-      if (!hp || hp.role !== "WhiteWolfKing" || !target.alive || target.isHuman) return false;
+      if (!hp || hp.role !== "WhiteWolfKing" || !target.alive || target.playerId === hp.playerId) return false;
       return true;
     },
     actionType: "night_action",

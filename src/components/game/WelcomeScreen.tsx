@@ -260,7 +260,7 @@ export function WelcomeScreen({
     referralCode,
     totalReferrals,
     loading: creditsLoading,
-    consumeCredit,
+    // consumeCredit, // TODO: 恢复额度扣除
     redeemCode,
     signOut,
     isPasswordRecovery,
@@ -672,17 +672,19 @@ export function WelcomeScreen({
       return;
     }
 
-    void consumeCredit()
-      .then((consumed) => {
-        if (consumed) return;
-        handleCreditFailure();
-      })
-      .catch(() => {
-        handleCreditFailure();
-      })
-      .finally(() => {
-        isStartingRef.current = false;
-      });
+    // TODO: 恢复额度扣除
+    // void consumeCredit()
+    //   .then((consumed) => {
+    //     if (consumed) return;
+    //     handleCreditFailure();
+    //   })
+    //   .catch(() => {
+    //     handleCreditFailure();
+    //   })
+    //   .finally(() => {
+    //     isStartingRef.current = false;
+    //   });
+    isStartingRef.current = false;
   };
 
   const handleOpenPayAsYouGo = () => {
@@ -732,17 +734,19 @@ export function WelcomeScreen({
       return;
     }
 
-    void consumeCredit()
-      .then((consumed) => {
-        if (consumed) return;
-        handleCreditFailure();
-      })
-      .catch(() => {
-        handleCreditFailure();
-      })
-      .finally(() => {
-        isStartingRef.current = false;
-      });
+    // TODO: 恢复额度扣除
+    // void consumeCredit()
+    //   .then((consumed) => {
+    //     if (consumed) return;
+    //     handleCreditFailure();
+    //   })
+    //   .catch(() => {
+    //     handleCreditFailure();
+    //   })
+    //   .finally(() => {
+    //     isStartingRef.current = false;
+    //   });
+    isStartingRef.current = false;
   };
 
   const handleOpenGroup = () => {

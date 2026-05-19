@@ -27,7 +27,7 @@ import {
   VillagerIcon,
 } from "@/components/icons/FlatIcons";
 import { useTypewriter } from "@/hooks/useTypewriter";
-import { useGameLogic } from "@/hooks/useGameLogic";
+import { useOnlineGame } from "@/hooks/useOnlineGame";
 import type { Player, Role } from "@/types/game";
 import { isWolfRole } from "@/types/game";
 import { PHASE_CONFIGS, isGameInProgress } from "@/store/game-machine";
@@ -170,7 +170,7 @@ export default function Home() {
     advanceSpeech,
     markCurrentSegmentCompleted,
     shouldAutoAdvanceToNextAI,
-  } = useGameLogic();
+  } = useOnlineGame();
   const { settings, setBgmVolume, setSoundEnabled, setAiVoiceEnabled, setGenshinMode, setSpectatorMode, setAutoAdvanceDialogueEnabled } = useSettings();
   const { bgmVolume, isSoundEnabled, isAiVoiceEnabled, isGenshinMode, isSpectatorMode, isAutoAdvanceDialogueEnabled } = settings;
   const shouldUseAiVoice = isSoundEnabled && isAiVoiceEnabled && bgmVolume > 0;

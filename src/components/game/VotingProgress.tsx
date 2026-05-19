@@ -124,7 +124,7 @@ export function VotingProgress({ gameState, humanPlayer }: VotingProgressProps) 
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0, opacity: 0 }}
                         className={`inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded ${
-                          voter.isHuman
+                          voter.playerId === humanPlayer?.playerId
                             ? "bg-[var(--color-accent)] text-white font-bold"
                             : "bg-white border border-[var(--border-color)] text-[var(--text-secondary)]"
                         }`}
@@ -163,12 +163,12 @@ export function VotingProgress({ gameState, humanPlayer }: VotingProgressProps) 
                 <span 
                   key={p.playerId} 
                   className={`px-1.5 py-0.5 rounded ${
-                    p.isHuman 
-                      ? "bg-[var(--color-accent-bg)] text-[var(--color-accent)] font-bold" 
+                    p.playerId === humanPlayer?.playerId
+                      ? "bg-[var(--color-accent-bg)] text-[var(--color-accent)] font-bold"
                       : "bg-[var(--bg-hover)]"
                   }`}
                 >
-                  {t("voteResult.seatLabel", { seat: p.seat + 1 })}{p.isHuman ? t("votingProgress.youSuffix") : ""}
+                  {t("voteResult.seatLabel", { seat: p.seat + 1 })}{p.playerId === humanPlayer?.playerId ? t("votingProgress.youSuffix") : ""}
                 </span>
               ))}
           </div>

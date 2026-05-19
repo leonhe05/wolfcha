@@ -17,6 +17,8 @@ import {
 } from "@/components/icons/FlatIcons";
 import { buildSimpleAvatarUrl, getModelLogoUrl } from "@/lib/avatar-config";
 import { useTranslations } from "next-intl";
+import { useAtom } from "jotai";
+import { myPlayerIdAtom } from "@/store/game-machine";
 
 interface PlayerDetailModalProps {
   player: Player | null;
@@ -57,9 +59,10 @@ export function PlayerDetailModal({ player, isOpen, onClose, humanPlayer, isGens
     }
   }, [player]);
 
+  const [myPlayerId] = useAtom(myPlayerIdAtom);
   const persona = renderPlayer?.agentProfile?.persona;
   const modelLabel = renderPlayer?.agentProfile?.modelRef?.model;
-  const isMe = !!renderPlayer?.isHuman;
+  const isMe = renderPlayer?.playerId === myPlayerId;
   const showPersona = !!persona && !isGenshinMode;
   const isWolfTeammate = humanPlayer && isWolfRole(humanPlayer.role) && renderPlayer && isWolfRole(renderPlayer.role) && !renderPlayer.isHuman;
   const canSeeRole = isMe || !!isWolfTeammate || !renderPlayer?.alive || isSpectatorMode;

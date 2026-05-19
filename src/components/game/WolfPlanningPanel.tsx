@@ -69,14 +69,14 @@ export function WolfPlanningPanel({ gameState, humanPlayer }: WolfPlanningPanelP
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               className={`flex items-center gap-2 p-2 rounded flex-1 min-w-0 ${
-                wolf.isHuman ? "bg-[#3e2723]" : "bg-[#2a201a]"
+                wolf.playerId === humanPlayer?.playerId ? "bg-[#3e2723]" : "bg-[#2a201a]"
               }`}
             >
               <div className="w-6 h-6 bg-[var(--color-wolf)] rounded-full flex items-center justify-center text-[10px] font-bold text-white shrink-0">
                 {wolf.seat + 1}
               </div>
               <span className="text-xs sm:text-sm flex-1 min-w-0 truncate">
-                {wolf.isHuman ? t("common.you") : wolf.displayName}
+                {wolf.playerId === humanPlayer?.playerId ? t("common.you") : wolf.displayName}
               </span>
               {hasVoted ? (
                 <span className="flex items-center gap-1 text-[10px] sm:text-xs text-green-400 shrink-0">
