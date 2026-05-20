@@ -70,17 +70,17 @@ export function useOnlineGame() {
 
   // Socket.IO 连接
   const socketRef = useRef<Socket | null>(null);
-  const isConnectingRef = useRef(false);
+  const pendingStartGameRef = useRef<Partial<StartGameOptions> | undefined>(undefined);
 
   // ============================================
-  // Socket.IO 连接与事件监听
+  // Socket.IO 连接与事件监听（仅注册一次）
   // ============================================
   useEffect(() => {
-    if (socketRef.current || isConnectingRef.current) return;
-    isConnectingRef.current = true;
+    if (socketRef.current) return;
 
     const socket = io(SOCKET_URL, {
       transports: ["websocket"],
+      autoConnect: false,
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
@@ -88,7 +88,6 @@ export function useOnlineGame() {
 
     socket.on("connect", () => {
       console.info("[wolfcha] Socket connected:", socket.id);
-      // 连接成功后自动加入房间（临时房间 ID，后续可由 UI 传入）
       const roomId = "default";
       const playerName = humanName || "玩家" + Math.floor(Math.random() * 1000);
       socket.emit(
@@ -101,6 +100,11 @@ export function useOnlineGame() {
           }
           if (response?.yourPlayerId) {
             setMyPlayerId(response.yourPlayerId);
+          }
+          // 如果有待发送的 START_GAME，连接并加入房间后自动发送
+          if (pendingStartGameRef.current !== undefined) {
+            socket.emit("START_GAME", pendingStartGameRef.current ?? {});
+            pendingStartGameRef.current = undefined;
           }
         }
       );
@@ -176,13 +180,11 @@ export function useOnlineGame() {
     });
 
     socketRef.current = socket;
-    isConnectingRef.current = false;
 
     return () => {
       socket.disconnect();
       socketRef.current = null;
     };
-    // Socket 连接只在挂载时建立一次，避免重连时重复加入房间
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -204,13 +206,22 @@ export function useOnlineGame() {
 
   /** 开始游戏 */
   const startGame = useCallback((options?: Partial<StartGameOptions>) => {
-    // 联机模式下，游戏配置由后端/房主管理，前端发送 START_GAME 即可
-    // options 保留以兼容旧 API
-    void options;
-    sendAction("START_GAME", {});
-  }, [sendAction]);
-  setGameStarted(true);
-  setShowTable(true);
+    const socket = socketRef.current;
+    if (!socket) {
+      toast.error("Socket 未初始化");
+      return;
+    }
+    setGameStarted(true);
+    setShowTable(true);
+    setIsWaitingForAI(true);
+    if (!socket.connected) {
+      // 首次触发连接，JOIN_ROOM ack 后自动发送 START_GAME
+      pendingStartGameRef.current = options ?? {};
+      socket.connect();
+      return;
+    }
+  }, []);
+
   /** 角色揭示后继续 */
   const continueAfterRoleReveal = useCallback(() => {
     sendAction("CONTINUE", {});
